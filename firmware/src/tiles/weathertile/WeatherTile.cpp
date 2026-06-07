@@ -48,10 +48,11 @@ void WeatherTile::drawIcon(ScreenManager &sm, const String &condition, int y, in
     if (size <= 0) {
         return;
     }
-    TJpgDec.setJpgScale(scale);
+    TJpgDec.setJpgScale(scale); // scale must be a power of 2 (1/2/4/8)
     uint16_t w = 0, h = 0;
-    TJpgDec.getJpgSize(&w, &h, iconStart, size);
-    int x = (SCREEN_SIZE - w) / 2;
+    TJpgDec.getJpgSize(&w, &h, iconStart, size); // native (unscaled) size
+    int scaledW = w / scale;                     // actual rendered width
+    int x = (SCREEN_SIZE - scaledW) / 2;         // centre the scaled icon
     TJpgDec.drawJpg(x, y, iconStart, size);
 }
 
@@ -77,21 +78,22 @@ void WeatherTile::render(ScreenManager &sm, int screen, bool force) {
             city.remove(comma);
         }
     }
-    sm.drawFittedString(city, ScreenCenterX, 32, 210, 36, Align::MiddleCenter);
+    // City -- narrow box so long names shrink and stay inside the round bezel.
+    sm.drawFittedString(city, ScreenCenterX, 40, 168, 28, Align::MiddleCenter);
 
     if (model->getCurrentTemperature() == 0.0 && model->getCurrentIcon().isEmpty()) {
         sm.drawString("...", ScreenCenterX, ScreenCenterY, 29, Align::MiddleCenter);
         return;
     }
 
-    // Weather icon (scale 3 ~ 80px) near the top.
-    drawIcon(sm, model->getCurrentIcon(), 55, 3);
+    // Weather icon (scale 4 -> 60px) in its own band below the city.
+    drawIcon(sm, model->getCurrentIcon(), 62, 4);
 
-    // Current temperature, large.
+    // Current temperature, large, in its own row -- no overlap with the icon.
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
-    sm.drawFittedString(model->getCurrentTemperature(0), ScreenCenterX, 160, 180, 50, Align::MiddleCenter);
+    sm.drawFittedString(model->getCurrentTemperature(0), ScreenCenterX, 158, 150, 50, Align::MiddleCenter);
 
-    // Today high / low.
-    sm.setFontColor(TFT_LIGHTGREY, TFT_BLACK);
-    sm.drawFittedString("H:" + model->getTodayHigh(0) + "  L:" + model->getTodayLow(0), ScreenCenterX, 205, 150, 20, Align::MiddleCenter);
+    // Today high / low, two-tone, at the bottom.
+    sm.drawString("H " + model->getTodayHigh(0), ScreenCenterX - 42, 200, 20, Align::MiddleCenter, TFT_ORANGE, TFT_BLACK);
+    sm.drawString("L " + model->getTodayLow(0), ScreenCenterX + 42, 200, 20, Align::MiddleCenter, TFT_SKYBLUE, TFT_BLACK);
 }
