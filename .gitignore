@@ -29,3 +29,12 @@ megalinter-reports/
 node_modules
 package.json
 package-lock.json
+
+# Antigravity CLI
+.antigravitycli/
+
+# Stray nested IDE/build copy (contains a local config.h with secrets — not part of the repo)
+/Info-Orbs/
+
+# Local simulator screenshots
+/orb.png
