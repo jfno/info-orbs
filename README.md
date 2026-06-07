@@ -75,6 +75,27 @@ Lastly, open up the `config.h` file you just copied/renamed and adjust the param
 
 Once you're done this, you can flash the firmware to your orbs by holding the "boot" button on the ESP32 and clicking the "Upload" arrow at the very bottom bar of VSC.
 
+### Tile Carousel (personalized build)
+
+This fork replaces the "one widget owns all 5 orbs" model with a **tile carousel**:
+each orb shows one self-contained single-orb **tile**, and a window of 5 consecutive
+tiles auto-advances one orb at a time (`CAROUSEL_ADVANCE_DELAY` seconds per step).
+Buttons: **left/right** step the window, **middle (short)** pauses/resumes
+auto-advance, **middle (medium/long)** taps the centered tile (e.g. force a refresh).
+
+The ribbon includes world clocks (POSIX TZ, no API), equities/ETFs/index proxies
+(TwelveData), weather per city (Visual Crossing, °C), crypto (CoinGecko), FX
+(open.er-api.com), sun/moon, and the next rocket launch (Launch Library 2).
+
+- **The tile order — and which clocks/cities/coins appear — lives in
+  `firmware/src/core/carousel/CarouselConfig.cpp`.** Reorder, comment out, or add
+  `addTile()` / `addSource()` calls there.
+- API keys and feature toggles live in `firmware/config/config.h` (see the
+  "CAROUSEL PERSONALIZATION" block in `config.h.template`): `STOCK_API_KEY`,
+  `STOCK_TICKER_LIST`, `STOCK_REFRESH_MINUTES`, `WEATHER_API_KEY`,
+  `ENABLE_CRYPTO`, `ENABLE_FX`, `ENABLE_SUN`, `ENABLE_LAUNCH`,
+  `CAROUSEL_ADVANCE_DELAY`.
+
 ### 3. Widget Options & Configuration
 **Basic Setup Fields**
 - Wifi is now configured on device using WifiManager by connected to the devices access point upon boot. However if this does not work, you may manually configure your wifi details using the fields in the config file (only do this as a last resort.)  

@@ -1,34 +1,16 @@
 #include "Button.h"
+#include "Carousel.h"
+#include "CarouselConfig.h"
 #include "GlobalTime.h"
 #include "ScreenManager.h"
 #include "Utils.h"
-#include "WidgetSet.h"
-#include "clockwidget/ClockWidget.h"
 #include "config_helper.h"
 #include "icons.h"
-#include "weatherwidget/WeatherWidget.h"
-#include "webdatawidget/WebDataWidget.h"
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
-
-#ifdef STOCK_TICKER_LIST
-    #include "stockwidget/StockWidget.h"
-#endif
-#ifdef PARQET_PORTFOLIO_ID
-    #include "parqetwidget/ParqetWidget.h"
-#endif
-#ifdef MQTT_WIDGET_HOST
-    #include "mqttwidget/MQTTWidget.h"
-#endif
+#include <TJpg_Decoder.h>
 
 TFT_eSPI tft = TFT_eSPI();
-
-#ifdef WIDGET_CYCLE_DELAY
-unsigned long m_widgetCycleDelay = WIDGET_CYCLE_DELAY * 1000; // Automatically cycle widgets every X seconds, set to 0 to disable
-#else
-unsigned long m_widgetCycleDelay = 0;
-#endif
-unsigned long m_widgetCycleDelayPrev = 0;
 
 Button buttonLeft(BUTTON_LEFT);
 Button buttonOK(BUTTON_OK);
@@ -45,7 +27,7 @@ const int connectionTimeout{10000};
 bool isConnected{true};
 
 ScreenManager *sm;
-WidgetSet *widgetSet;
+Carousel *carousel;
 
 // This function should probably be moved somewhere else
 bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *bitmap) {
@@ -104,8 +86,6 @@ void setup() {
     TJpgDec.setJpgScale(1);
     TJpgDec.drawJpg(0, 0, logo_start, logo_end - logo_start);
 
-    widgetSet = new WidgetSet(sm);
-
 #ifdef GC9A01_DRIVER
     Serial.println("GC9A01 Driver");
 #endif
@@ -121,64 +101,25 @@ void setup() {
 
     globalTime = GlobalTime::getInstance();
 
-    widgetSet->add(new ClockWidget(*sm));
-#ifdef PARQET_PORTFOLIO_ID
-    widgetSet->add(new ParqetWidget(*sm));
-#endif
-#ifdef STOCK_TICKER_LIST
-    widgetSet->add(new StockWidget(*sm));
-#endif
-    widgetSet->add(new WeatherWidget(*sm));
-#ifdef WEB_DATA_WIDGET_URL
-    widgetSet->add(new WebDataWidget(*sm, WEB_DATA_WIDGET_URL));
-#endif
-#ifdef WEB_DATA_STOCK_WIDGET_URL
-    widgetSet->add(new WebDataWidget(*sm, WEB_DATA_STOCK_WIDGET_URL));
-#endif
-#ifdef MQTT_WIDGET_HOST
-    widgetSet->add(new MQTTWidget(*sm, MQTT_WIDGET_HOST, MQTT_WIDGET_PORT));
-#endif
-
-    m_widgetCycleDelayPrev = millis();
-}
-
-void checkCycleWidgets() {
-    if (m_widgetCycleDelay > 0 && (m_widgetCycleDelayPrev == 0 || (millis() - m_widgetCycleDelayPrev) >= m_widgetCycleDelay)) {
-        widgetSet->next();
-        m_widgetCycleDelayPrev = millis();
-    }
+    carousel = new Carousel(sm);
+    buildCarousel(*carousel);
 }
 
 void checkButtons() {
-    // Reset cycle timer whenever a button is pressed
     if (buttonLeft.pressedShort()) {
-        // Left short press cycles widgets backward
-        Serial.println("Left button short pressed -> switch to prev Widget");
-        m_widgetCycleDelayPrev = millis();
-        widgetSet->prev();
+        Serial.println("Left button short pressed -> previous tile");
+        carousel->prev();
     } else if (buttonRight.pressedShort()) {
-        // Right short press cycles widgets forward
-        Serial.println("Right button short pressed -> switch to next Widget");
-        m_widgetCycleDelayPrev = millis();
-        widgetSet->next();
+        Serial.println("Right button short pressed -> next tile");
+        carousel->next();
     } else {
-        ButtonState leftState = buttonLeft.getState();
         ButtonState middleState = buttonOK.getState();
-        ButtonState rightState = buttonRight.getState();
-
-        // Everying else that is not BTN_NOTHING will be forwarded to the current widget
-        if (leftState != BTN_NOTHING) {
-            Serial.printf("Left button pressed, state=%d\n", leftState);
-            m_widgetCycleDelayPrev = millis();
-            widgetSet->buttonPressed(BUTTON_LEFT, leftState);
-        } else if (middleState != BTN_NOTHING) {
-            Serial.printf("Middle button pressed, state=%d\n", middleState);
-            m_widgetCycleDelayPrev = millis();
-            widgetSet->buttonPressed(BUTTON_OK, middleState);
-        } else if (rightState != BTN_NOTHING) {
-            Serial.printf("Right button pressed, state=%d\n", rightState);
-            m_widgetCycleDelayPrev = millis();
-            widgetSet->buttonPressed(BUTTON_RIGHT, rightState);
+        if (middleState == BTN_SHORT) {
+            Serial.println("Middle button short pressed -> pause/resume");
+            carousel->togglePause();
+        } else if (middleState == BTN_MEDIUM || middleState == BTN_LONG) {
+            Serial.printf("Middle button pressed, state=%d -> tap center tile\n", middleState);
+            carousel->tapCenter();
         }
     }
 }
@@ -187,20 +128,15 @@ void loop() {
     if (wifiWidget->isConnected() == false) {
         wifiWidget->update();
         wifiWidget->draw();
-        widgetSet->setClearScreensOnDrawCurrent(); // Clear screen after wifiWidget
+        carousel->forceRedraw(); // repaint tiles once WiFi is back
         delay(100);
     } else {
-        if (!widgetSet->initialUpdateDone()) {
-            widgetSet->initializeAllWidgetsData();
-        }
         globalTime->updateTime();
 
         checkButtons();
 
-        widgetSet->updateCurrent();
-        widgetSet->updateBrightnessByTime(globalTime->getHour24());
-        widgetSet->drawCurrent();
-
-        checkCycleWidgets();
+        carousel->update();
+        carousel->updateBrightnessByTime(globalTime->getHour24());
+        carousel->draw();
     }
 }

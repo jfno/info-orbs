@@ -89,6 +89,13 @@ time_t GlobalTime::getUnixEpoch() {
     return m_unixEpoch;
 }
 
+time_t GlobalTime::getUtcEpoch() {
+    // m_timeClient applies the timezone offset internally (setTimeOffset in
+    // getTimeZoneOffsetFromAPI), so getEpochTime() is already local time.
+    // Subtract the offset (once it is known) to recover true UTC.
+    return m_timeClient->getEpochTime() - (m_timeZoneOffset == -1 ? 0 : m_timeZoneOffset);
+}
+
 int GlobalTime::getDay() {
     return m_day;
 }

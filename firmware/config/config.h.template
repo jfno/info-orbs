@@ -31,8 +31,31 @@
 #define WEATHER_SCREEN_MODE Dark        // Can be either Light or Dark
 #define WEATHER_UNITS_METRIC            // Comment this line out (or delete it) if you want imperial units for the weather
 
-// STOCK TICKER CONFIGURATION
-#define STOCK_TICKER_LIST "BTC/USD,USD/CAD,XEQT,SPY,APC&country=Germany" // Choose 5 securities to track. You can track forex, crypto (symbol/USD) or stocks from any exchange (if one ticker is part of multiple exchanges you can add on "&country=Canada" to narrow down to your ticker)
+// ============= CAROUSEL PERSONALIZATION =================================================================
+// The display is a carousel of single-orb "tiles". A window of 5 tiles is shown and
+// auto-advances one orb at a time. The authoritative tile order (and which cities /
+// clocks / coins are shown) lives in firmware/src/core/carousel/CarouselConfig.cpp --
+// edit that file to reorder / enable / disable tiles. The keys + toggles below feed it.
+
+#define CAROUSEL_ADVANCE_DELAY 6 // Seconds the window stays on each step before advancing
+
+// World clocks use the on-device POSIX TZ database (no API). The zones are listed in
+// CarouselConfig.cpp, e.g.:
+//   Los Angeles "PST8PDT,M3.2.0,M11.1.0"
+//   New York    "EST5EDT,M3.2.0,M11.1.0"
+//   Paris       "CET-1CEST,M3.5.0,M10.5.0/3"
+
+// STOCK TICKER CONFIGURATION (TwelveData -- register your own free key at twelvedata.com)
+#define STOCK_API_KEY "YOUR_TWELVEDATA_KEY" // <-- your TwelveData API key
+#define STOCK_TICKER_LIST "GOOG,MSFT,NVDA,AMZN,META,VOO,VFH,VGK,SPY,QQQ,DIA" // Tickers (SPY/QQQ/DIA proxy S&P500/Nasdaq/Dow)
+#define STOCK_REFRESH_MINUTES 20 // Full-list refresh interval. 11 symbols * 3/h ~= 792/day (free cap 800)
+//#define STOCK_MARKET_HOURS_ONLY  // Uncomment to only refresh during US market hours (cuts API usage)
+
+// EXTRA TILES (all keyless)
+#define ENABLE_CRYPTO "bitcoin,ethereum" // CoinGecko coin ids; comment out to disable crypto tiles
+#define ENABLE_FX "EUR,CAD"              // open.er-api.com USD/XXX pairs; comment out to disable FX tiles
+#define ENABLE_SUN                       // Sunrise/sunset + moon phase tile; comment out to disable
+#define ENABLE_LAUNCH                    // Next rocket launch tile; comment out to disable
 
 // PARQET.COM PORTFOLIO CONFIGURATION
 //#define PARQET_PORTFOLIO_ID "" // set the id of your parqet.com portfolio. Make sure the portfolio is set to public!

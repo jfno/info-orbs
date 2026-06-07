@@ -41,6 +41,7 @@ public:
     int getMinute();
     String getMinutePadded();
     time_t getUnixEpoch();
+    time_t getUtcEpoch();
     int getSecond();
     int getDay();
     int getMonth();
