@@ -42,7 +42,7 @@ void WebDataWidget::update(bool force) {
 
         if (httpCode > 0) { // Check for the returning code
             JsonDocument doc;
-            DeserializationError error = deserializeJson(doc, http.getString());
+            DeserializationError error = deserializeJson(doc, http.getStream());
             if (!error) {
                 if (doc["interval"].is<int>()) {
                     m_updateDelay = doc["interval"];

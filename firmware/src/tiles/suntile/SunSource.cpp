@@ -33,7 +33,7 @@ bool SunSource::fetch() {
     int httpCode = http.GET();
     if (httpCode > 0) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
+        DeserializationError error = deserializeJson(doc, http.getStream());
         http.end();
         if (!error && doc["status"].as<String>() == "OK") {
             m_sunrise = parseIso8601Utc(doc["results"]["sunrise"].as<String>());

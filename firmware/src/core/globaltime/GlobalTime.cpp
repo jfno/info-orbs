@@ -144,7 +144,7 @@ void GlobalTime::getTimeZoneOffsetFromAPI() {
 
     if (httpCode > 0) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
+        DeserializationError error = deserializeJson(doc, http.getStream());
         if (!error) {
             m_timeZoneOffset = doc["gmtOffset"].as<int>();
             if (doc["zoneEnd"].isNull()) {
@@ -165,6 +165,7 @@ void GlobalTime::getTimeZoneOffsetFromAPI() {
     } else {
         Serial.println("Failed to get timezone offset from API");
     }
+    http.end();
 }
 
 bool GlobalTime::getFormat24Hour() {

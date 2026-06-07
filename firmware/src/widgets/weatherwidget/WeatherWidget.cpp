@@ -83,7 +83,7 @@ bool WeatherWidget::getWeatherData() {
     if (httpCode > 0) {
         // Check for the return code   TODO: factor out
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
+        DeserializationError error = deserializeJson(doc, http.getStream());
         http.end();
 
         if (!error) {

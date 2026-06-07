@@ -100,9 +100,8 @@ void StockSource::fetchSymbol(StockDataModel &stock) {
     int httpCode = http.GET();
 
     if (httpCode > 0) {
-        String payload = http.getString();
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, payload);
+        DeserializationError error = deserializeJson(doc, http.getStream());
         if (!error) {
             float currentPrice = doc["close"].as<float>();
             if (currentPrice > 0.0) {

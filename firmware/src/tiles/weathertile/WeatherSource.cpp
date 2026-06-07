@@ -34,7 +34,7 @@ bool WeatherSource::fetch() {
     int httpCode = http.GET();
     if (httpCode > 0) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
+        DeserializationError error = deserializeJson(doc, http.getStream());
         http.end();
         if (!error) {
             m_model.setCityName(doc["resolvedAddress"].as<String>());

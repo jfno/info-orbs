@@ -25,7 +25,7 @@ bool LaunchSource::fetch() {
         JsonDocument filter;
         filter["results"][0]["name"] = true;
         filter["results"][0]["net"] = true;
-        DeserializationError error = deserializeJson(doc, http.getString(), DeserializationOption::Filter(filter));
+        DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
         http.end();
         if (!error) {
             JsonObject first = doc["results"][0];

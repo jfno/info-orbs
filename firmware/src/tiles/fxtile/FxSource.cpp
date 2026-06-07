@@ -48,7 +48,7 @@ bool FxSource::fetch() {
     int httpCode = http.GET();
     if (httpCode > 0) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getString());
+        DeserializationError error = deserializeJson(doc, http.getStream());
         http.end();
         if (!error && doc["result"].as<String>() == "success") {
             for (auto &r : m_rates) {
