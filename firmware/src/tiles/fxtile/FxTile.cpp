@@ -26,11 +26,11 @@ void FxTile::render(ScreenManager &sm, int screen, bool force) {
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
 
     const int centre = 120;
-    sm.drawString("USD/" + m_currency, centre, 85, 28, Align::MiddleCenter);
+    sm.drawFittedString("USD/" + m_currency, centre, 85, 180, 32, Align::MiddleCenter);
 
     if (rate == nullptr || !rate->valid) {
         sm.drawString("...", centre, 140, 29, Align::MiddleCenter);
         return;
     }
-    sm.drawString(Utils::formatFloat(rate->value, 4), centre, 140, 32, Align::MiddleCenter);
+    sm.drawFittedString(Utils::formatFloat(rate->value, 4), centre, 140, 200, 36, Align::MiddleCenter);
 }

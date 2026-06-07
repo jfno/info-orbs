@@ -198,7 +198,7 @@ void WeatherWidget::drawWeatherIcon(int displayIndex, const String &condition, i
 void WeatherWidget::singleWeatherDeg(int displayIndex) {
     m_manager.selectScreen(displayIndex);
     m_manager.fillScreen(m_backgroundColor);
-    m_manager.drawCentreString(model.getCurrentTemperature(0), centre, 90, 88);
+    m_manager.drawFittedString(model.getCurrentTemperature(0), centre, 90, 200, 96, Align::MiddleCenter);
 
     // No glaring white chunks in Dark mode
     if (m_screenMode == Light) {
@@ -206,13 +206,12 @@ void WeatherWidget::singleWeatherDeg(int displayIndex) {
         m_manager.fillRect(centre - 1, 150, 2, 90, m_backgroundColor);
     }
 
-    int fontSize = 22;
     m_manager.setFontColor(m_invertedForegroundColor);
     m_manager.setBackgroundColor(m_invertedBackgroundColor);
-    m_manager.drawCentreString("High", 80, 170, fontSize);
-    m_manager.drawCentreString("Low", 160, 170, fontSize);
-    m_manager.drawCentreString(model.getTodayHigh(0), 80, 210, fontSize);
-    m_manager.drawCentreString(model.getTodayLow(0), 160, 210, fontSize);
+    m_manager.drawFittedString("High", 80, 170, 70, 26, Align::MiddleCenter);
+    m_manager.drawFittedString("Low", 160, 170, 70, 26, Align::MiddleCenter);
+    m_manager.drawFittedString(model.getTodayHigh(0), 80, 210, 70, 26, Align::MiddleCenter);
+    m_manager.drawFittedString(model.getTodayLow(0), 160, 210, 70, 26, Align::MiddleCenter);
     m_manager.setFontColor(m_foregroundColor);
     m_manager.setBackgroundColor(m_backgroundColor);
 }
@@ -250,7 +249,7 @@ void WeatherWidget::weatherText(int displayIndex) {
 
     auto y = 125;
     for (auto i = 0; i < 4; i++) {
-        m_manager.drawCentreString(messageArr[i], centre, y, 15);
+        m_manager.drawFittedString(messageArr[i], centre, y, 170, 20, Align::MiddleCenter);
         y += 25;
     }
 }
@@ -270,21 +269,16 @@ void WeatherWidget::threeDayWeather(int displayIndex) {
         m_manager.fillRect(0, 180, 240, 70, m_foregroundColor);
     }
 
-    m_manager.drawString(m_mode == MODE_HIGHS ? "Highs" : "Lows", centre, highLowY, fontSize, Align::MiddleCenter, m_invertedForegroundColor, m_invertedBackgroundColor);
+    m_manager.setFontColor(m_invertedForegroundColor);
+    m_manager.setBackgroundColor(m_invertedBackgroundColor);
+    m_manager.drawFittedString(m_mode == MODE_HIGHS ? "Highs" : "Lows", centre, highLowY, 150, 26, Align::MiddleCenter);
     // Reset colors
     m_manager.setFontColor(m_foregroundColor);
     m_manager.setBackgroundColor(m_backgroundColor);
 
-    int temperatureFontSize = fontSize; // 0-9 only
-    // Look up all the temperatures, and if any of them are more than 2 digits, we need
-    // to scale down the font -- or it won't look right on the screen.
     String temps[days];
     for (auto i = 0; i < days; i++) {
         temps[i] = m_mode == MODE_HIGHS ? model.getDayHigh(i, 0) : model.getDayLow(i, 0);
-        if (temps[i].length() > 4) {
-            // We've got a nutty 3-digit temperature (plus degree sign), scale down
-            temperatureFontSize = fontSize - 4; // smaller
-        }
     }
 
     m_manager.setFontColor(m_foregroundColor);
@@ -293,11 +287,11 @@ void WeatherWidget::threeDayWeather(int displayIndex) {
         const int x = (centre - columnSize) + i * columnSize;
 
         drawWeatherIcon(displayIndex, model.getDayIcon(i), x - 30, 40, 4);
-        m_manager.drawCentreString(temps[i], x, 122, temperatureFontSize);
+        m_manager.drawFittedString(temps[i], x, 122, columnSize - 5, 24, Align::MiddleCenter);
 
         String shortDayName = LOC_WEEKDAY[weekday(m_time->getUnixEpoch() + (86400 * (i + 1))) - 1];
         shortDayName.remove(3);
-        m_manager.drawString(shortDayName, x, 154, fontSize, Align::MiddleCenter);
+        m_manager.drawFittedString(shortDayName, x, 154, columnSize - 5, 24, Align::MiddleCenter);
     }
 }
 

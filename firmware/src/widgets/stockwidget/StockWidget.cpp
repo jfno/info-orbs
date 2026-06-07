@@ -127,7 +127,8 @@ void StockWidget::displayStock(int8_t displayIndex, StockDataModel &stock, uint3
     m_manager.drawCentreString("H: " + stock.getCurrencySymbol() + stock.getHighPrice(), centre, 200, smallFontSize);
     m_manager.drawCentreString("L: " + stock.getCurrencySymbol() + stock.getLowPrice(), centre, 215, smallFontSize);
     m_manager.setFontColor(TFT_BLACK, TFT_LIGHTGREY);
-    m_manager.drawString(stock.getCompany(), centre, 121, smallFontSize, Align::MiddleCenter);
+    m_manager.setFontColor(TFT_BLACK, TFT_LIGHTGREY);
+    m_manager.drawFittedString(stock.getCompany(), centre, 121, 220, 18, Align::MiddleCenter);
     if (stock.getPercentChange() < 0.0) {
         m_manager.setFontColor(TFT_RED, TFT_BLACK);
         m_manager.fillTriangle(110 + arrowOffsetX, 120 + arrowOffsetY, 130 + arrowOffsetX, 120 + arrowOffsetY, 120 + arrowOffsetX, 132 + arrowOffsetY, TFT_RED);
@@ -137,14 +138,14 @@ void StockWidget::displayStock(int8_t displayIndex, StockDataModel &stock, uint3
         m_manager.fillTriangle(110 + arrowOffsetX, 132 + arrowOffsetY, 130 + arrowOffsetX, 132 + arrowOffsetY, 120 + arrowOffsetX, 120 + arrowOffsetY, TFT_GREEN);
         m_manager.drawArc(centre, centre, 120, 118, 0, 360, TFT_GREEN, TFT_GREEN);
     }
-    m_manager.drawString(stock.getPercentChange(2) + "%", centre, 48, bigFontSize, Align::MiddleCenter);
+    m_manager.drawFittedString(stock.getPercentChange(2) + "%", centre, 48, 180, 34, Align::MiddleCenter);
     // Draw stock data
     m_manager.setFontColor(TFT_BLACK, TFT_WHITE);
 
-    m_manager.drawString(stock.getTicker(), centre, 92, bigFontSize, Align::MiddleCenter);
+    m_manager.drawFittedString(stock.getTicker(), centre, 92, 210, 34, Align::MiddleCenter);
     m_manager.setFontColor(TFT_WHITE, TFT_BLACK);
 
-    m_manager.drawString(stock.getCurrencySymbol() + stock.getCurrentPrice(2), centre, 155, bigFontSize, Align::MiddleCenter);
+    m_manager.drawFittedString(stock.getCurrencySymbol() + stock.getCurrentPrice(2), centre, 155, 200, 34, Align::MiddleCenter);
 }
 
 String StockWidget::getName() {

@@ -38,12 +38,12 @@ void LaunchTile::render(ScreenManager &sm, int screen, bool force) {
 
     const int centre = 120;
     sm.setFontColor(TFT_CYAN, TFT_BLACK);
-    sm.drawString("Next Launch", centre, 40, 20, Align::MiddleCenter);
+    sm.drawFittedString("Next Launch", centre, 40, 160, 24, Align::MiddleCenter);
 
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
     String name = m_source->isValid() ? m_source->getLaunchName() : String("");
     sm.drawFittedString(name, centre, 110, 220, 70, Align::MiddleCenter);
 
     sm.setFontColor(TFT_YELLOW, TFT_BLACK);
-    sm.drawString(countdown, centre, 195, 22, Align::MiddleCenter);
+    sm.drawFittedString(countdown, centre, 195, 170, 26, Align::MiddleCenter);
 }

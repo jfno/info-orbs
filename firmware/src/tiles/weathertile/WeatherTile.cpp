@@ -89,9 +89,9 @@ void WeatherTile::render(ScreenManager &sm, int screen, bool force) {
 
     // Current temperature, large.
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
-    sm.drawString(model->getCurrentTemperature(0), ScreenCenterX, 160, 48, Align::MiddleCenter);
+    sm.drawFittedString(model->getCurrentTemperature(0), ScreenCenterX, 160, 180, 50, Align::MiddleCenter);
 
     // Today high / low.
     sm.setFontColor(TFT_LIGHTGREY, TFT_BLACK);
-    sm.drawString("H:" + model->getTodayHigh(0) + "  L:" + model->getTodayLow(0), ScreenCenterX, 205, 18, Align::MiddleCenter);
+    sm.drawFittedString("H:" + model->getTodayHigh(0) + "  L:" + model->getTodayLow(0), ScreenCenterX, 205, 150, 20, Align::MiddleCenter);
 }

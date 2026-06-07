@@ -53,13 +53,13 @@ void SunTile::render(ScreenManager &sm, int screen, bool force) {
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
 
     const int centre = 120;
-    sm.drawString(m_label, centre, 40, 20, Align::MiddleCenter);
+    sm.drawFittedString(m_label, centre, 40, 160, 24, Align::MiddleCenter);
 
     sm.setFontColor(TFT_YELLOW, TFT_BLACK);
-    sm.drawString("Rise " + formatLocal(m_source->getSunrise()), centre, 95, 22, Align::MiddleCenter);
+    sm.drawFittedString("Rise " + formatLocal(m_source->getSunrise()), centre, 95, 180, 26, Align::MiddleCenter);
     sm.setFontColor(TFT_ORANGE, TFT_BLACK);
-    sm.drawString("Set  " + formatLocal(m_source->getSunset()), centre, 130, 22, Align::MiddleCenter);
+    sm.drawFittedString("Set  " + formatLocal(m_source->getSunset()), centre, 130, 180, 26, Align::MiddleCenter);
 
     sm.setFontColor(TFT_LIGHTGREY, TFT_BLACK);
-    sm.drawString("Moon: " + moonPhaseName(), centre, 190, 18, Align::MiddleCenter);
+    sm.drawFittedString("Moon: " + moonPhaseName(), centre, 190, 160, 22, Align::MiddleCenter);
 }

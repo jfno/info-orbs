@@ -28,7 +28,7 @@ void CryptoTile::render(ScreenManager &sm, int screen, bool force) {
 
     if (coin == nullptr || !coin->valid) {
         sm.setFontColor(TFT_WHITE, TFT_BLACK);
-        sm.drawString(m_label, centre, 100, 29, Align::MiddleCenter);
+        sm.drawFittedString(m_label, centre, 100, 180, 32, Align::MiddleCenter);
         sm.drawString("...", centre, 145, 29, Align::MiddleCenter);
         return;
     }
@@ -39,11 +39,11 @@ void CryptoTile::render(ScreenManager &sm, int screen, bool force) {
     sm.drawArc(centre, centre, 120, 116, 0, 360, accent, accent);
 
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
-    sm.drawString(m_label, centre, 70, 32, Align::MiddleCenter);
+    sm.drawFittedString(m_label, centre, 70, 180, 36, Align::MiddleCenter);
 
     int8_t digits = coin->price >= 1000.0 ? 0 : 2;
-    sm.drawString("$" + Utils::formatFloat(coin->price, digits), centre, 120, 26, Align::MiddleCenter);
+    sm.drawFittedString("$" + Utils::formatFloat(coin->price, digits), centre, 120, 200, 30, Align::MiddleCenter);
 
     sm.setFontColor(accent, TFT_BLACK);
-    sm.drawString(Utils::formatFloat(coin->change24h, 2) + "%", centre, 165, 24, Align::MiddleCenter);
+    sm.drawFittedString(Utils::formatFloat(coin->change24h, 2) + "%", centre, 165, 180, 28, Align::MiddleCenter);
 }

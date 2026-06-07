@@ -72,9 +72,17 @@
 //#define MQTT_WIDGET_PASS "mqttuser" // Leave empty if authentication is not required
 
 // WIFI CONFIGURATION
-// Normally WiFi should be configured using a smartphone or computer to connect to the Info-Orbs
-// configuration portal. But as a fall-back method, WiFi can be setup by uncommenting these 2 lines and
-// changing the SSID and password.
+// By default WiFi is configured on-device via the WiFiManager portal: on boot, join
+// the "Info-Orbs_XX" access point with a phone/PC and browse to 192.168.4.1.
+//
+// Optional auto-roam: list known networks and the device connects (WiFiMulti) to
+// whichever is in range, falling back to the portal if none are reachable or you hold
+// the RIGHT button on power-up. Use 2.4 GHz networks only. Uncomment and edit:
+//#define WIFI_KNOWN_NETWORKS \
+//    WIFI_NET("MyHomeSSID", "homePassword") \
+//    WIFI_NET("OfficeGuest", "")
+//
+// Legacy single hardcoded network (used only if WIFI_KNOWN_NETWORKS is not defined):
 //#define WIFI_SSID "MyWiFiRouter" // Wifi router SSID name (use only 2.4 GHz network)
 //#define WIFI_PASS "WiFiPassword" // Wifi router password
 

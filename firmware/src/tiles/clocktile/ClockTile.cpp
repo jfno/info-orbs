@@ -42,23 +42,24 @@ void ClockTile::render(ScreenManager &sm, int screen, bool force) {
     m_lastTime = timeStr;
     m_lastScreen = screen;
 
+    sm.setFont(DEFAULT_FONT);
     sm.selectScreen(screen);
     sm.fillScreen(TFT_BLACK);
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
 
-    // City label
-    sm.drawCentreString(m_label, ScreenCenterX, 50, 29);
+    // City label -- fitted so long names (e.g. "Los Angeles") shrink to stay
+    // inside the round bezel instead of bleeding off the edges.
+    sm.drawFittedString(m_label, ScreenCenterX, 56, 180, 30, Align::MiddleCenter);
 
-    // Big HH:MM
-    sm.drawCentreString(timeStr, ScreenCenterX, ScreenCenterY + 5, 55);
+    // Big HH:MM, bounded to a box that fits within the circle.
+    sm.drawFittedString(timeStr, ScreenCenterX, 122, 200, 92, Align::MiddleCenter);
 
     // Day-of-week + AM/PM marker
-    const String weekday = String(LOC_WEEKDAY[t.tm_wday]);
-    String footer = weekday;
+    String footer = String(LOC_WEEKDAY[t.tm_wday]);
     footer.remove(3);
     if (!FORMAT_24_HOUR) {
         footer += isPM ? "  PM" : "  AM";
     }
     sm.setFontColor(TFT_LIGHTGREY, TFT_BLACK);
-    sm.drawCentreString(footer, ScreenCenterX, 200, 18);
+    sm.drawFittedString(footer, ScreenCenterX, 190, 160, 26, Align::MiddleCenter);
 }

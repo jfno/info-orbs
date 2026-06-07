@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include <WiFi.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiMulti.h>
 
 const int lineHeight = 40;
 const int statusScreenIndex = 3;
@@ -22,11 +23,6 @@ void WifiWidget::setup() {
     m_manager.drawCentreString("Connecting", ScreenCenterX, ScreenCenterY - lineHeight, fontSize);
 
     WiFi.mode(WIFI_STA); // For WiFiManager explicitly set mode to station, ESP defaults to STA+AP
-
-#if (defined WIFI_SSID && defined WIFI_PASS)
-    m_hardCodedWiFi = true;
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
-#endif
 
     // Remove unwanted buttons from the config portal
     std::vector<const char *> wm_menu = {"wifi"}; // buttons: wifi, info, exit, update
@@ -56,9 +52,38 @@ void WifiWidget::setup() {
     wifimgr.setCleanConnect(true);
     wifimgr.setConnectRetries(5);
 
-    // WiFiManager automatically connects using saved credentials...
-    if (wifimgr.autoConnect(m_apssid.c_str())) {
-        Serial.print("WifiManager connected.");
+    // 1) Auto-roam to a known network (config.h WIFI_KNOWN_NETWORKS / legacy WIFI_SSID):
+    //    connect to whichever is in range. Falls through to the portal below if none connect.
+    bool connected = false;
+#ifdef WIFI_KNOWN_NETWORKS
+    WiFiMulti wifiMulti;
+    #define WIFI_NET(ssid, pass) wifiMulti.addAP(ssid, pass);
+    WIFI_KNOWN_NETWORKS
+    #undef WIFI_NET
+    Serial.println("Trying known WiFi networks...");
+    unsigned long startAttempt = millis();
+    while (millis() - startAttempt < 12000) {
+        if (wifiMulti.run() == WL_CONNECTED) {
+            connected = true;
+            break;
+        }
+        delay(250);
+    }
+#elif (defined WIFI_SSID && defined WIFI_PASS)
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    unsigned long startAttempt = millis();
+    while (millis() - startAttempt < 12000) {
+        if (WiFi.status() == WL_CONNECTED) {
+            connected = true;
+            break;
+        }
+        delay(250);
+    }
+#endif
+
+    // 2) WiFiManager automatically connects using saved credentials...
+    if (connected || wifimgr.autoConnect(m_apssid.c_str())) {
+        Serial.print("WiFi connected.");
     } else { // ...if connection fails (no saved credentials), it starts an access point with a WiFi setup portal at 192.168.4.1
         m_configPortalRunning = true;
         Serial.println("Configuration portal running.");

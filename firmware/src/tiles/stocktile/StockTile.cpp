@@ -31,7 +31,7 @@ void StockTile::render(ScreenManager &sm, int screen, bool force) {
     if (!hasData) {
         // Placeholder until the source fills this symbol in.
         sm.setFontColor(TFT_WHITE, TFT_BLACK);
-        sm.drawString(m_symbol, centre, 100, 29, Align::MiddleCenter);
+        sm.drawFittedString(m_symbol, centre, 100, 180, 32, Align::MiddleCenter);
         sm.drawString("...", centre, 145, 29, Align::MiddleCenter);
         return;
     }
@@ -50,13 +50,13 @@ void StockTile::render(ScreenManager &sm, int screen, bool force) {
 
     // Ticker, percent change, price.
     sm.setFontColor(accent, TFT_BLACK);
-    sm.drawString(stock->getPercentChange(2) + "%", centre, 70, 24, Align::MiddleCenter);
+    sm.drawFittedString(stock->getPercentChange(2) + "%", centre, 70, 180, 28, Align::MiddleCenter);
 
     sm.setFontColor(TFT_WHITE, TFT_BLACK);
     String ticker = stock->getTicker();
     if (ticker.isEmpty()) {
         ticker = m_symbol;
     }
-    sm.drawString(ticker, centre, 120, 32, Align::MiddleCenter);
-    sm.drawString(stock->getCurrencySymbol() + stock->getCurrentPrice(2), centre, 165, 26, Align::MiddleCenter);
+    sm.drawFittedString(ticker, centre, 120, 200, 36, Align::MiddleCenter);
+    sm.drawFittedString(stock->getCurrencySymbol() + stock->getCurrentPrice(2), centre, 165, 180, 30, Align::MiddleCenter);
 }
