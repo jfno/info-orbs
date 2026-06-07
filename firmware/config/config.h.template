@@ -37,7 +37,7 @@
 // clocks / coins are shown) lives in firmware/src/core/carousel/CarouselConfig.cpp --
 // edit that file to reorder / enable / disable tiles. The keys + toggles below feed it.
 
-#define CAROUSEL_ADVANCE_DELAY 6 // Seconds the window stays on each step before advancing
+#define CAROUSEL_ADVANCE_DELAY 15 // Seconds the window stays on each step before advancing
 
 // World clocks use the on-device POSIX TZ database (no API). The zones are listed in
 // CarouselConfig.cpp, e.g.:
