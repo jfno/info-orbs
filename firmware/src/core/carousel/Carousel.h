@@ -43,7 +43,6 @@ public:
     void forceRedraw() { m_lastDrawnOffset = -1; }
 
 private:
-    void showLoading();
     void renderWindow(bool force);
 
     ScreenManager *m_screenManager;
@@ -52,6 +51,7 @@ private:
 
     int m_offset = 0;
     int m_lastDrawnOffset = -1;
+    size_t m_pollIndex = 0; // round-robin index for staggered source polling
     bool m_paused = false;
     bool m_initialized = false;
 

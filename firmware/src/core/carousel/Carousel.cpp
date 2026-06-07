@@ -14,32 +14,26 @@ void Carousel::addSource(TileSource *source) {
     m_sources.push_back(source);
 }
 
-void Carousel::showLoading() {
-    m_screenManager->selectScreen(3);
-    m_screenManager->fillScreen(TFT_BLACK);
-    m_screenManager->setFontColor(TFT_WHITE);
-    m_screenManager->drawCentreString("Loading data:", ScreenCenterX, ScreenCenterY, 22);
-}
-
 void Carousel::update() {
     if (!m_initialized) {
-        // One-time blocking load so the first frame isn't blank.
-        showLoading();
-        for (TileSource *source : m_sources) {
-            m_screenManager->selectScreen(4);
-            m_screenManager->fillScreen(TFT_BLACK);
-            m_screenManager->setFontColor(TFT_WHITE);
-            m_screenManager->drawCentreString(source->getName(), ScreenCenterX, ScreenCenterY, 22);
-            source->update(true);
-        }
+        // Clear the boot logo and start rendering immediately. Data is fetched
+        // lazily (one source per pass below), so tiles that need no network --
+        // the clocks -- appear at once and a slow/unreachable host never stalls
+        // the whole UI at boot.
         m_screenManager->clearAllScreens();
         m_initialized = true;
         m_advancePrev = millis();
+        m_pollIndex = 0;
         return;
     }
 
-    for (TileSource *source : m_sources) {
-        source->update();
+    // Poll a single source per pass. Each source fetches on its own timer, so the
+    // first real fetch of each is naturally staggered across passes -- the carousel
+    // keeps drawing and advancing between the (blocking) HTTP calls, capping any
+    // stall at one fetch instead of the whole source list.
+    if (!m_sources.empty()) {
+        m_sources[m_pollIndex]->update();
+        m_pollIndex = (m_pollIndex + 1) % m_sources.size();
     }
 
     if (!m_paused && !m_tiles.empty() && (millis() - m_advancePrev) >= m_advanceDelay) {
