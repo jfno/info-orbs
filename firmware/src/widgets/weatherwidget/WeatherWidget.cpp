@@ -14,6 +14,7 @@
 #include "icons.h"
 
 #include "config_helper.h"
+#include "../../core/utils/HttpHelper.h"
 
 WeatherWidget::WeatherWidget(ScreenManager &manager) : Widget(manager) {
     m_mode = MODE_HIGHS;
@@ -78,12 +79,13 @@ void WeatherWidget::update(bool force) {
 
 bool WeatherWidget::getWeatherData() {
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(httpRequestAddress);
     int httpCode = http.GET();
     if (httpCode > 0) {
         // Check for the return code   TODO: factor out
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         http.end();
 
         if (!error) {

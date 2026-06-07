@@ -8,6 +8,7 @@
 #include "icons.h"
 #include "wifiwidget/WifiWidget.h"
 #include <Arduino.h>
+#include <esp_heap_caps.h>
 #include <TJpg_Decoder.h>
 
 TFT_eSPI tft = TFT_eSPI();
@@ -58,6 +59,51 @@ void setupButtons() {
     attachInterrupt(digitalPinToInterrupt(BUTTON_RIGHT), isrButtonChangeRight, CHANGE);
 }
 
+void checkButtons() {
+    if (buttonLeft.pressedShort()) {
+        Serial.println("Left button short pressed -> previous tile");
+        carousel->prev();
+    } else if (buttonRight.pressedShort()) {
+        Serial.println("Right button short pressed -> next tile");
+        carousel->next();
+    } else {
+        ButtonState middleState = buttonOK.getState();
+        if (middleState == BTN_SHORT) {
+            Serial.println("Middle button short pressed -> pause/resume");
+            carousel->togglePause();
+        } else if (middleState == BTN_MEDIUM || middleState == BTN_LONG) {
+            Serial.printf("Middle button pressed, state=%d -> tap center tile\n", middleState);
+            carousel->tapCenter();
+        }
+    }
+}
+
+void customLoopTask(void *pvParameters) {
+    while (true) {
+        static unsigned long lastHeapPrint = 0;
+        if (millis() - lastHeapPrint > 5000) {
+            uint32_t free8 = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+            uint32_t max8 = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+            Serial.printf("[HEAP] 8BIT Free: %u B, Max Alloc: %u B | Total Free: %u B\n", free8, max8, ESP.getFreeHeap());
+            lastHeapPrint = millis();
+        }
+
+        if (wifiWidget->isConnected() == false) {
+            wifiWidget->update();
+            wifiWidget->draw();
+            carousel->forceRedraw(); // repaint tiles once WiFi is back
+            delay(100);
+        } else {
+            globalTime->updateTime();
+            checkButtons();
+            carousel->update();
+            carousel->updateBrightnessByTime(globalTime->getHour24());
+            carousel->draw();
+        }
+        vTaskDelay(1); // Yield to other tasks
+    }
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println();
@@ -88,40 +134,20 @@ void setup() {
 
     carousel = new Carousel(sm);
     buildCarousel(*carousel);
-}
 
-void checkButtons() {
-    if (buttonLeft.pressedShort()) {
-        Serial.println("Left button short pressed -> previous tile");
-        carousel->prev();
-    } else if (buttonRight.pressedShort()) {
-        Serial.println("Right button short pressed -> next tile");
-        carousel->next();
-    } else {
-        ButtonState middleState = buttonOK.getState();
-        if (middleState == BTN_SHORT) {
-            Serial.println("Middle button short pressed -> pause/resume");
-            carousel->togglePause();
-        } else if (middleState == BTN_MEDIUM || middleState == BTN_LONG) {
-            Serial.printf("Middle button pressed, state=%d -> tap center tile\n", middleState);
-            carousel->tapCenter();
-        }
-    }
+    // Create the custom loop task with a 24 KB stack size
+    xTaskCreatePinnedToCore(
+        customLoopTask,
+        "customLoopTask",
+        24576,
+        NULL,
+        1,
+        NULL,
+        1 // Core 1 (same as default loopTask)
+    );
 }
 
 void loop() {
-    if (wifiWidget->isConnected() == false) {
-        wifiWidget->update();
-        wifiWidget->draw();
-        carousel->forceRedraw(); // repaint tiles once WiFi is back
-        delay(100);
-    } else {
-        globalTime->updateTime();
-
-        checkButtons();
-
-        carousel->update();
-        carousel->updateBrightnessByTime(globalTime->getHour24());
-        carousel->draw();
-    }
+    // Delete the default loop task to free its 8 KB stack memory
+    vTaskDelete(NULL);
 }

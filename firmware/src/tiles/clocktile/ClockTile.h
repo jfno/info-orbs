@@ -18,6 +18,7 @@ private:
     String m_posixTz;
     String m_lastTime;  // last drawn HH:MM, for incremental redraw
     int m_lastScreen = -1;
+    time_t m_lastUtc = 0;
 };
 
 #endif // CLOCK_TILE_H

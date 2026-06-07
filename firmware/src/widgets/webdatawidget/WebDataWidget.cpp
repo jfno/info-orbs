@@ -1,5 +1,6 @@
 
 #include "WebDataWidget.h"
+#include "../../core/utils/HttpHelper.h"
 
 WebDataWidget::WebDataWidget(ScreenManager &manager, String url) : Widget(manager) {
     httpRequestAddress = url;
@@ -37,12 +38,13 @@ void WebDataWidget::draw(bool force) {
 void WebDataWidget::update(bool force) {
     if (force || m_lastUpdate == 0 || (millis() - m_lastUpdate) >= m_updateDelay) {
         HTTPClient http;
+        HttpHelper::prepare(http);
         http.begin(httpRequestAddress);
         int httpCode = http.GET();
 
         if (httpCode > 0) { // Check for the returning code
             JsonDocument doc;
-            DeserializationError error = deserializeJson(doc, http.getStream());
+            DeserializationError error = HttpHelper::deserialize(http, doc);
             if (!error) {
                 if (doc["interval"].is<int>()) {
                     m_updateDelay = doc["interval"];

@@ -3,6 +3,7 @@
 #include "TimeParse.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 SunSource::SunSource(float lat, float lng) : m_lat(lat), m_lng(lng) {}
 
@@ -29,11 +30,12 @@ bool SunSource::fetch() {
     String url = "https://api.sunrise-sunset.org/json?lat=" + String(m_lat, 4) +
                  "&lng=" + String(m_lng, 4) + "&formatted=0";
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(url);
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         http.end();
         if (!error && doc["status"].as<String>() == "OK") {
             m_sunrise = parseIso8601Utc(doc["results"]["sunrise"].as<String>());

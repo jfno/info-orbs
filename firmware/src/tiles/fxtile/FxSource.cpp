@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 FxSource::FxSource(const String &currencies) {
     int start = 0;
@@ -44,11 +45,12 @@ void FxSource::update(bool force) {
 bool FxSource::fetch() {
     String url = "https://open.er-api.com/v6/latest/USD";
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(url);
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         http.end();
         if (!error && doc["result"].as<String>() == "success") {
             for (auto &r : m_rates) {

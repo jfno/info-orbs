@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 CryptoSource::CryptoSource(const String &ids) : m_idsCsv(ids) {
     int start = 0;
@@ -45,11 +46,12 @@ bool CryptoSource::fetch() {
     String url = "https://api.coingecko.com/api/v3/simple/price?ids=" + m_idsCsv +
                  "&vs_currencies=usd&include_24hr_change=true";
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(url);
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         http.end();
         if (!error) {
             for (auto &c : m_coins) {

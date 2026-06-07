@@ -15,9 +15,8 @@ ScreenManager::ScreenManager(TFT_eSPI &tft) : m_tft(tft) {
     m_tft.setTextDatum(MC_DATUM);
     reset();
 
-    // I'm not sure which cache size is actually good.
-    // Needs testing.
-    m_render.setCacheSize(128, 128, 8192);
+    // Restrict cache size to prevent memory exhaustion from cached FT_Size structures
+    m_render.setCacheSize(2, 4, 2048);
     setFont(DEFAULT_FONT);
     m_render.setDrawer(m_tft);
 
@@ -167,8 +166,23 @@ void ScreenManager::reset() {
 }
 
 unsigned int ScreenManager::calculateFitFontSize(uint32_t limit_width, uint32_t limit_height, Layout layout, const String &text) {
+    if (text.length() == 0) {
+        return 12;
+    }
     unsigned int calcFontSize = m_render.calculateFitFontSize(limit_width, limit_height, layout, text.c_str());
-    // Serial.printf("calcFitFontSize: t=%s, w=%d, h=%d -> fs=%d\n", str, limit_width, limit_height, calcFontSize);
+    
+    // Safety cap: font size should never exceed 2x the height limit (max 120)
+    // to prevent punctuation/flat strings from blowing up the size to astronomical values.
+    uint32_t maxAllowed = limit_height * 2;
+    if (maxAllowed > 120) {
+        maxAllowed = 120;
+    }
+    
+    if (calcFontSize > maxAllowed) {
+        calcFontSize = maxAllowed;
+    } else if (calcFontSize < 6) {
+        calcFontSize = 6;
+    }
     return calcFontSize;
 }
 

@@ -3,6 +3,7 @@
 #include "config_helper.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 #include <iomanip>
 
@@ -67,12 +68,13 @@ void StockWidget::getStockData(StockDataModel &stock) {
     String httpRequestAddress = "https://api.twelvedata.com/quote?apikey=e03fc53524454ab8b65d91b23c669cc5&symbol=" + stock.getSymbol();
 
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(httpRequestAddress);
     int httpCode = http.GET();
 
     if (httpCode > 0) { // Check for the returning code
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
 
         if (!error) {
             float currentPrice = doc["close"].as<float>();

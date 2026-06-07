@@ -2,6 +2,7 @@
 
 #include "config_helper.h"
 #include <TimeLib.h>
+#include "../utils/HttpHelper.h"
 
 GlobalTime *GlobalTime::m_instance = nullptr;
 
@@ -24,7 +25,12 @@ GlobalTime *GlobalTime::getInstance() {
 
 void GlobalTime::updateTime() {
     if (millis() - m_updateTimer > m_oneSecond) {
-        if (m_timeZoneOffset == -1 || (m_nextTimeZoneUpdate > 0 && m_unixEpoch > m_nextTimeZoneUpdate)) {
+        if (m_timeZoneOffset == -1) {
+            unsigned long delayMs = (m_lastTimeZoneAttempt == 0) ? 0 : 60000;
+            if (millis() - m_lastTimeZoneAttempt >= delayMs) {
+                getTimeZoneOffsetFromAPI();
+            }
+        } else if (m_nextTimeZoneUpdate > 0 && m_unixEpoch > m_nextTimeZoneUpdate) {
             getTimeZoneOffsetFromAPI();
         }
         m_timeClient->update();
@@ -138,13 +144,15 @@ bool GlobalTime::isPM() {
 }
 
 void GlobalTime::getTimeZoneOffsetFromAPI() {
+    m_lastTimeZoneAttempt = millis();
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(String(TIMEZONE_API_URL) + "?key=" + TIMEZONE_API_KEY + "&format=json&fields=gmtOffset,zoneEnd&by=zone&zone=" + String(TIMEZONE_API_LOCATION));
     int httpCode = http.GET();
 
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         if (!error) {
             m_timeZoneOffset = doc["gmtOffset"].as<int>();
             if (doc["zoneEnd"].isNull()) {
@@ -163,7 +171,7 @@ void GlobalTime::getTimeZoneOffsetFromAPI() {
             Serial.println("Deserialization error on timezone offset API response");
         }
     } else {
-        Serial.println("Failed to get timezone offset from API");
+        Serial.printf("Failed to get timezone offset from API, httpCode: %d\n", httpCode);
     }
     http.end();
 }

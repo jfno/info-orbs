@@ -12,6 +12,11 @@ ClockTile::ClockTile(const String &label, const String &posixTz)
 void ClockTile::render(ScreenManager &sm, int screen, bool force) {
     time_t utc = GlobalTime::getInstance()->getUtcEpoch();
 
+    if (!force && utc == m_lastUtc && screen == m_lastScreen) {
+        return;
+    }
+    m_lastUtc = utc;
+
     // Resolve this zone's local time on-device via the POSIX TZ database.
     setenv("TZ", m_posixTz.c_str(), 1);
     tzset();

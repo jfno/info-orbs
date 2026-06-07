@@ -4,6 +4,7 @@
 #include "config_helper.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 WeatherSource::WeatherSource(const String &location, const String &units)
     : m_location(location), m_units(units) {}
@@ -30,11 +31,12 @@ void WeatherSource::update(bool force) {
 
 bool WeatherSource::fetch() {
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(buildUrl());
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         JsonDocument doc;
-        DeserializationError error = deserializeJson(doc, http.getStream());
+        DeserializationError error = HttpHelper::deserialize(http, doc);
         http.end();
         if (!error) {
             m_model.setCityName(doc["resolvedAddress"].as<String>());

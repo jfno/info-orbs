@@ -3,6 +3,7 @@
 #include "TimeParse.h"
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "../../core/utils/HttpHelper.h"
 
 LaunchSource::LaunchSource() {}
 
@@ -17,15 +18,16 @@ void LaunchSource::update(bool force) {
 bool LaunchSource::fetch() {
     String url = "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=1&mode=list";
     HTTPClient http;
+    HttpHelper::prepare(http);
     http.begin(url);
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
         // Filter to the fields we need to keep the JSON document small.
         JsonDocument doc;
         JsonDocument filter;
         filter["results"][0]["name"] = true;
         filter["results"][0]["net"] = true;
-        DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
+        DeserializationError error = HttpHelper::deserialize(http, doc, DeserializationOption::Filter(filter));
         http.end();
         if (!error) {
             JsonObject first = doc["results"][0];
